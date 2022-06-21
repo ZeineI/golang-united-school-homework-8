@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -19,6 +20,12 @@ var (
 	operationFlag = flag.String("operation", "", "describe the action")
 	filenameFlag  = flag.String("filename", "", "where data save")
 	itemFlag      = flag.String("item", "", "output")
+)
+
+var (
+	errorFilename  = errors.New("-fileName flag has to be specified")
+	errorOperation = errors.New("-operation flag has to be specified")
+	errorNotExist  = errors.New("Operation abcd not allowed!")
 )
 
 func Perform(args Arguments, writer io.Writer) error {
