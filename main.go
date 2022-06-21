@@ -25,6 +25,8 @@ var (
 var (
 	errorFilename  = errors.New("-fileName flag has to be specified")
 	errorOperation = errors.New("-operation flag has to be specified")
+	errorItem      = errors.New("-item flag has to be specified")
+	errorID        = errors.New("-id flag has to be specified")
 	errorNotExist  = errors.New("Operation abcd not allowed!")
 )
 
