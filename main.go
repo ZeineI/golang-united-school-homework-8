@@ -17,9 +17,10 @@ type User struct {
 }
 
 var (
-	operationFlag = flag.String("operation", "", "describe the action")
-	filenameFlag  = flag.String("filename", "", "where data save")
-	itemFlag      = flag.String("item", "", "output")
+	idFlag        = flag.String("id", "", "identificator")
+	operationFlag = flag.String("operation", "", "action in json")
+	filenameFlag  = flag.String("filename", "", "output path")
+	itemFlag      = flag.String("item", "", "data info")
 )
 
 var (
@@ -45,6 +46,7 @@ func main() {
 func parseArgs() Arguments {
 	flag.Parse()
 	mpUser := Arguments{
+		"id":        *idFlag,
 		"operation": *operationFlag,
 		"filename":  *filenameFlag,
 		"item":      *itemFlag,
