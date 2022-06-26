@@ -41,10 +41,10 @@ func main() {
 func parseArgs() Arguments {
 	flag.Parse()
 	mpUser := Arguments{
-		"id":        *idFlag,
-		"operation": *operationFlag,
-		"fileName":  *fileNameFlag,
-		"item":      *itemFlag,
+		"id":        "",
+		"operation": "remove",
+		"item":      "",
+		"fileName":  "test.json",
 	}
 	return mpUser
 }
@@ -61,9 +61,9 @@ func Perform(args Arguments, writer io.Writer) error {
 	case "list":
 		return listF(args, writer)
 	case "findById":
-
+		return findF(args, writer)
 	case "remove":
-
+		return removeF(args, writer)
 	case "":
 		return errorOperation
 	default:
@@ -175,7 +175,8 @@ func alreadyExist(users []user, item user) bool {
 }
 
 func updateFile(fileN string, data []byte) error {
-	file, err := os.OpenFile(fileN, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(fileN, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	// file.Seek(0, 0)
 	if err != nil {
 		return err
 	}
@@ -201,4 +202,93 @@ func readItem(item string) (user, error) {
 		return itm, err
 	}
 	return itm, nil
+}
+
+func removeF(args Arguments, writer io.Writer) error {
+	idS := args["id"]
+	if idS == "" {
+		return errorID
+	}
+
+	exist, err := Exists(args["fileName"])
+	if err != nil {
+		return err
+	}
+
+	if !exist {
+		_, err := writer.Write([]byte(fmt.Sprintf("Item with id %s not found", idS)))
+		return err
+	}
+
+	users, err := readUsers(args["fileName"])
+	if err != nil {
+		return err
+	}
+
+	check := false
+	var newUsers []user
+	for _, user := range users {
+		if user.Id != idS {
+			newUsers = append(newUsers, user)
+		} else {
+			check = true
+		}
+	}
+
+	if !check {
+		_, err := writer.Write([]byte(fmt.Sprintf("Item with id %s not found", idS)))
+		return err
+	}
+
+	newData, err := updateData(newUsers)
+	if err != nil {
+		return err
+	}
+
+	if err = updateFile(args["fileName"], newData); err != nil {
+		return err
+	}
+	return nil
+}
+
+func findF(args Arguments, writer io.Writer) error {
+	idS := args["id"]
+	if idS == "" {
+		return errorID
+	}
+
+	exist, err := Exists(args["fileName"])
+	if err != nil {
+		return err
+	}
+
+	if !exist {
+		_, err := writer.Write([]byte(fmt.Sprintf("Item with id %s not found", idS)))
+		return err
+	}
+
+	users, err := readUsers(args["fileName"])
+	if err != nil {
+		return err
+	}
+
+	var foundUser user
+	check := false
+	for _, user := range users {
+		if user.Id == idS {
+			foundUser = user
+			check = true
+		}
+	}
+
+	if !check {
+		return nil
+	} else {
+		res, err := json.Marshal(foundUser)
+		if err != nil {
+			return err
+		}
+		_, err = writer.Write(res)
+		return err
+	}
 }
