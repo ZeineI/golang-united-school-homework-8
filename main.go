@@ -46,14 +46,11 @@ func parseArgs() Arguments {
 		"fileName":  *fileNameFlag,
 		"item":      *itemFlag,
 	}
-	fmt.Println(mpUser)
 	return mpUser
 }
 
 func Perform(args Arguments, writer io.Writer) error {
 	if args["fileName"] == "" {
-		fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAA")
-		fmt.Println(args)
 		return errorfileName
 	}
 
@@ -62,7 +59,7 @@ func Perform(args Arguments, writer io.Writer) error {
 	case "add":
 		return addF(args, writer)
 	case "list":
-
+		return listF(args, writer)
 	case "findById":
 
 	case "remove":
@@ -76,9 +73,27 @@ func Perform(args Arguments, writer io.Writer) error {
 	return nil
 }
 
+func listF(args Arguments, writer io.Writer) error {
+	exist, err := Exists(args["fileName"])
+	if err != nil {
+		return err
+	}
+
+	if !exist {
+		return nil
+	}
+
+	dat, err := os.ReadFile(args["fileName"])
+	if err != nil {
+		return err
+	}
+	writer.Write(dat)
+	return nil
+}
+
 func readUsers(file string) ([]user, error) {
 	var users []user
-	//read file
+	// read file
 	dat, err := os.ReadFile(file)
 	if err != nil {
 		return users, err
@@ -122,19 +137,18 @@ func addF(args Arguments, writer io.Writer) error {
 			return err
 		}
 	}
+
 	users, err := readUsers(args["fileName"])
 	if err != nil {
 		return err
 	}
 
-	//convert string to user
+	// convert string to user
 	item, err := readItem(itemS)
 	if err != nil {
 		return err
 	}
-
 	if alreadyExist(users, item) {
-		fmt.Println("AAAAAAAAAAAAAAAA")
 		_, err := writer.Write([]byte(fmt.Sprintf("Item with id %s already exists", item.Id)))
 		return err
 	}
